@@ -20,7 +20,7 @@ export interface WebServer {
 
 export interface ApiGateway {
   apiPath: string;
-  // stagePath: string;
+  apiStage: string;
 }
 
 export interface DynamoDb {
@@ -83,7 +83,7 @@ export class CommonConfig {
       const builder = Builder<ApiGateway>();
 
       builder.apiPath( config.get('ApiGateway.apiPath') );
-      // builder.stagePath( config.get('ApiGateway.stagePath') );
+      builder.apiStage( config.get('ApiGateway.apiStage') );
 
       this.apiGateway = builder.build();
     }

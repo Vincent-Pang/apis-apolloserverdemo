@@ -17,6 +17,7 @@ import { AclNormalUser } from '../acl/acluser/AclNormalUser';
 import { IAclUser } from '../acl/acluser/IAclUser';
 import { CommonConfig } from '../config/CommonConfig';
 
+import * as URI from 'urijs';
 import { LoggerInstance } from 'winston';
 import { AccessControlList } from '../acl/AccessControlList';
 import { Role } from '../acl/acluser/Role';
@@ -26,7 +27,6 @@ import { RequestContext } from './RequestContext';
 @Injectable()
 export class ExpressServer {
   public readonly app = express();
-  public readonly apiPath = 'apolloserverdemo';
   public readonly basePath: string;
 
   public constructor(private config: CommonConfig,
@@ -35,9 +35,9 @@ export class ExpressServer {
                      acl: AccessControlList) {
     acl.init();
 
-    // const stagePath = (this.config.apiGateway.stagePath !== '') ? `/${this.config.apiGateway.stagePath}` : '';
-    // this.basePath = this.apiPath + stagePath;
-    this.basePath = this.config.apiGateway.apiPath;
+    this.basePath = URI
+                      .joinPaths(this.config.apiGateway.apiPath, this.config.apiGateway.apiStage)
+                      .valueOf();
 
     this.app.use(compression());
     this.app.use(cors());

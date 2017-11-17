@@ -12,7 +12,7 @@ Parameters:
   BasePath:
     Type: String
     Description: The api basePath (e.g. apolloserverdemo)
-  Stage:
+  ApiGatewayStageName:
     Type: String
     Description: Stage to deploy (e.g. dev)
 
@@ -20,8 +20,8 @@ Resources:
   ApiGatewayApi:
     Type: AWS::Serverless::Api
     Properties:
-      DefinitionUri: ./swagger.yaml
-      StageName: !Ref Stage
+      DefinitionUri: ./packaged-swagger.yaml
+      StageName: !Ref ApiGatewayStageName
       Variables:
         ServerlessExpressLambdaFunctionName: !Ref LambdaFunction
 
@@ -31,7 +31,9 @@ Resources:
       BasePath: !Ref BasePath
       DomainName: !Sub ${SubDomainName}.${DomainName}
       RestApiId: !Ref ApiGatewayApi
+      # https://github.com/awslabs/serverless-application-model/issues/119
       # Stage: prod
+      # Stage: !Ref ApiGatewayStageName
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -66,11 +68,11 @@ Resources:
     Properties:
       Environment:
         Variables:
-          STAGE: !Ref Stage
+          STAGE: !Ref ApiGatewayStageName
           NODE_ENV: production
       CodeUri: ./
       Handler: build/src/index.handler
-      MemorySize: 1024
+      MemorySize: 512
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: nodejs6.10
       Timeout: 30
@@ -110,7 +112,7 @@ Outputs:
         - !Ref AWS::Region
         - "#/apis/"
         - !Ref ApiGatewayApi
-        - !Sub "/stages/${Stage}"
+        - !Sub "/stages/${ApiGatewayStageName}"
 
   ApiUrl:
     Description: Invoke URL for your API. Clicking this link will perform a GET request
@@ -120,4 +122,4 @@ Outputs:
       - - https://
         - !Sub "${SubDomainName}.${DomainName}"
         - !Sub "/${BasePath}"
-        - !Sub "/${Stage}/graphiql"
+        - !Sub "/${ApiGatewayStageName}/graphiql"
